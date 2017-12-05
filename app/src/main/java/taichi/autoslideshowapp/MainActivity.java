@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 //Timer,ハンドラ
 import java.util.Timer;
 import java.util.TimerTask;
@@ -124,6 +125,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageView.setImageURI(imageUri);
     }
 
+    private void getContentsInfo() {
+
+        // 画像の情報を取得する
+        ContentResolver resolver = getContentResolver();
+        cursor = resolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, // データの種類
+                null, // 項目(null = 全項目)
+                null, // フィルタ条件(null = フィルタなし)
+                null, // フィルタ用パラメータ
+                null // ソート (null ソートなし)
+        );
+
+        if (cursor.moveToFirst()) {
+            setImage(cursor);
+        }
+    }
+
     private void confirmExternalStoragePermission() {
         // Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -141,20 +159,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void getContentsInfo() {
-
-        // 画像の情報を取得する
-        ContentResolver resolver = getContentResolver();
-        cursor = resolver.query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, // データの種類
-                null, // 項目(null = 全項目)
-                null, // フィルタ条件(null = フィルタなし)
-                null, // フィルタ用パラメータ
-                null // ソート (null ソートなし)
-        );
-
-        if (cursor.moveToFirst()) {
-            setImage(cursor);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (grantResults.length == 0) { return; }
+        if (requestCode == PERMISSIONS_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            getContentsInfo();
+        } else {
+            Toast.makeText(this, "権限なし", Toast.LENGTH_SHORT).show();
         }
     }
 }
